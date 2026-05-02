@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <raylib.h>
+#include "DataStore.h"
 using namespace std;
 
 class App {
@@ -10,5 +11,5 @@ public:
     void Draw();
     void Update();
 private:
-
+    DataStore data;
 };

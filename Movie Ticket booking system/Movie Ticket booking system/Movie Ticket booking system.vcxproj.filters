@@ -5,6 +5,9 @@
     <ClCompile Include="App.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
+    <ClCompile Include="DataStore.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header files">
@@ -16,6 +19,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="DataStore.h">
       <Filter>Header files</Filter>
     </ClInclude>
   </ItemGroup>
