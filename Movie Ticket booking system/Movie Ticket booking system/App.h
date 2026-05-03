@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <raylib.h>
+#include <ctime>
 #include "DataStore.h"
 using namespace std;
 
@@ -12,4 +13,5 @@ public:
     void Update();
 private:
     DataStore data;
+    bool IsConfirmButtonClicked();
 };
