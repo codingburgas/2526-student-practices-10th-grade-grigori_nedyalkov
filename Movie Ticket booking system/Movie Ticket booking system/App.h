@@ -3,6 +3,7 @@
 #include <raylib.h>
 #include <ctime>
 #include "DataStore.h"
+#include "utils.h"
 using namespace std;
 
 class App {
@@ -12,6 +13,7 @@ public:
     void Draw();
     void Update();
 private:
+    AppState state;
     DataStore data;
     bool IsConfirmButtonClicked();
 };

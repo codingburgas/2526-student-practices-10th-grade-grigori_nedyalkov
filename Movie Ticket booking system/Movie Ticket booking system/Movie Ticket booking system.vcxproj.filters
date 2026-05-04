@@ -24,5 +24,8 @@
     <ClInclude Include="DataStore.h">
       <Filter>Header files</Filter>
     </ClInclude>
+    <ClInclude Include="utils.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

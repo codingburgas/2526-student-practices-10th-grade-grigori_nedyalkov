@@ -102,6 +102,7 @@
   <ItemGroup>
     <ClInclude Include="App.h" />
     <ClInclude Include="DataStore.h" />
+    <ClInclude Include="utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
