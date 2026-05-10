@@ -13,7 +13,23 @@ public:
     void Draw();
     void Update();
 private:
-    AppState state;
+    AppState currentState;
     DataStore data;
-    bool IsConfirmButtonClicked();
+    int selectedMovieId;
+    int selectedShowId;
+    const int seatStartX = 100;
+    const int seatStartY = 150;
+    const int seatSize = 40;
+    const int seatPad = 10;
+    //Update helpers
+    void UpdateMainMenu();
+    void UpdateMovieScreen();
+    void UpdateSeatSelection();
+    void UpdateBooking();
+    //Draw helpers
+    void DrawMainMenu();
+    void DrawMovieScreen();
+    void DrawSeatSelection();
+    void DrawBooking();
+    bool IsButtonClicked(Rectangle btn);
 };

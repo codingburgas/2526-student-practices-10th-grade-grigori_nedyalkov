@@ -1,5 +1,5 @@
 #include "../App.h"
 int main() {
-	App* app = new App();
-	app->Display();
+	App app;
+	app.Display();
 }

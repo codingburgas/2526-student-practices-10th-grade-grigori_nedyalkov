@@ -1,5 +1,4 @@
 #pragma once
-#pragma once
 #include <string>
 #include <vector>
 #include <ctime>
@@ -14,6 +13,19 @@ struct Movie {
 	string language;
 	string genre;
 	string releaseDate;
+};
+
+struct Hall {
+	int id;
+	int cinemaId;
+	string name;
+};
+
+struct Cinema {
+	int id;
+	string name;
+	string city;
+	vector<Hall> halls;
 };
 
 struct Seat {
