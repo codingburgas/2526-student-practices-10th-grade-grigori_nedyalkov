@@ -8,6 +8,7 @@ enum AppState
     REGISTER,
     MAIN_PAGE,
     MOVIE,
+    SHOWTIME_SELECTION,
     SEAT_SELECTION,
     BOOKING
 };

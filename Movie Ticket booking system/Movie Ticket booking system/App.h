@@ -26,10 +26,12 @@ private:
     void UpdateMovieScreen();
     void UpdateSeatSelection();
     void UpdateBooking();
+    void UpdateShowtimeSelection();
     //Draw helpers
     void DrawMainMenu();
     void DrawMovieScreen();
     void DrawSeatSelection();
     void DrawBooking();
     bool IsButtonClicked(Rectangle btn);
+    void DrawShowtimeSelection();
 };

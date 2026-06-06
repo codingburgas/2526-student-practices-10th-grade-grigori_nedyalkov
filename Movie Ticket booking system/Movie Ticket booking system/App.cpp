@@ -36,10 +36,11 @@ void App::Update()
 {
     switch (currentState)
     {
-    case MAIN_MENU:      UpdateMainMenu();      break;
-    case MOVIE:          UpdateMovieScreen();   break;
-    case SEAT_SELECTION: UpdateSeatSelection(); break;
-    case BOOKING:        UpdateBooking();       break;
+    case MAIN_MENU:          UpdateMainMenu();          break;
+    case MOVIE:              UpdateMovieScreen();       break;
+    case SHOWTIME_SELECTION: UpdateShowtimeSelection(); break;
+    case SEAT_SELECTION:     UpdateSeatSelection();     break;
+    case BOOKING:            UpdateBooking();           break;
     default: break;
     }
 }
@@ -48,10 +49,11 @@ void App::Draw()
 {
     switch (currentState)
     {
-    case MAIN_MENU:      DrawMainMenu();      break;
-    case MOVIE:          DrawMovieScreen();   break;
-    case SEAT_SELECTION: DrawSeatSelection(); break;
-    case BOOKING:        DrawBooking();       break;
+    case MAIN_MENU:          DrawMainMenu();          break;
+    case MOVIE:              DrawMovieScreen();       break;
+    case SHOWTIME_SELECTION: DrawShowtimeSelection(); break;
+    case SEAT_SELECTION:     DrawSeatSelection();     break;
+    case BOOKING:            DrawBooking();           break;
     default: break;
     }
 }
@@ -87,20 +89,12 @@ void App::UpdateMovieScreen()
     int y = 150;
     for (auto& movie : data.movies)
     {
-        Rectangle btn = { 600, (float)y, 700, 50 };
+        Rectangle btn = {600, (float)y, 700, 50 };
         if (IsButtonClicked(btn))
         {
             selectedMovieId = movie.id;
-            // Auto-select first show for this movie
-            for (auto& show : data.shows)
-            {
-                if (show.movieId == movie.id)
-                {
-                    selectedShowId = show.id;
-                    break;
-                }
-            }
-            currentState = SEAT_SELECTION;
+            selectedShowId = -1;
+            currentState = SHOWTIME_SELECTION;
             return;
         }
         y += 70;
@@ -242,4 +236,83 @@ void App::DrawBooking()
     Rectangle menuBtn = { 760, 600, 400, 60 };
     DrawRectangleRec(menuBtn, DARKBLUE);
     DrawText("Back to Main Menu", 820, 618, 20, WHITE);
+}
+
+void App::UpdateShowtimeSelection()
+{
+    Rectangle backBtn = { 20, 20, 120, 40 };
+    if (IsButtonClicked(backBtn)) { currentState = MOVIE; return; }
+
+    Movie* movie = data.GetMovieById(selectedMovieId);
+    if (!movie) return;
+
+    vector<Show*> movieShows = data.GetShowsByMovieId(selectedMovieId);
+
+    int y = 200;
+    for (auto& show : movieShows)
+    {
+        Rectangle btn = { 660, (float)y, 600, 55 };
+        if (IsButtonClicked(btn))
+        {
+            selectedShowId = show->id;
+            currentState = SEAT_SELECTION;
+            return;
+        }
+        y += 80;
+    }
+}
+
+void App::DrawShowtimeSelection()
+{
+    Movie* movie = data.GetMovieById(selectedMovieId);
+    if (!movie) return;
+
+    // Title
+    string header = "Showtimes  -  " + movie->title;
+    DrawText(header.c_str(), 600, 100, 30, DARKGRAY);
+
+    // Movie details
+    DrawText(("Genre: " + movie->genre).c_str(), 620, 145, 20, GRAY);
+    DrawText(("Language: " + movie->language).c_str(), 850, 145, 20, GRAY);
+    DrawText(("Released: " + movie->releaseDate).c_str(), 1050, 145, 20, GRAY);
+
+    Rectangle backBtn = { 20, 20, 120, 40 };
+    DrawRectangleRec(backBtn, GRAY);
+    DrawText("< Back", 35, 30, 20, WHITE);
+
+    vector<Show*> movieShows = data.GetShowsByMovieId(selectedMovieId);
+
+    if (movieShows.empty())
+    {
+        DrawText("No showtimes available.", 700, 400, 24, GRAY);
+        return;
+    }
+
+    int y = 200;
+    for (auto& show : movieShows)
+    {
+        Rectangle btn = { 660, (float)y, 600, 55 };
+        Vector2 mouse = GetMousePosition();
+        Color btnColor = CheckCollisionPointRec(mouse, btn) ? DARKBLUE : BLUE;
+
+        DrawRectangleRec(btn, btnColor);
+
+        // Show time
+        DrawText(("Time: " + show->startTime).c_str(), 680, y + 10, 22, WHITE);
+
+        // Count available seats
+        int available = 0;
+        for (auto& seat : show->seats)
+            if (seat.status == AVAILABLE) available++;
+
+        string seatsText = "Seats available: " + to_string(available);
+        DrawText(seatsText.c_str(), 980, y + 10, 20, LIGHTGRAY);
+
+        // Hall info
+        Hall* hall = data.GetHallById(show->hallId);
+        if (hall)
+            DrawText(hall->name.c_str(), 850, y + 10, 20, YELLOW);
+
+        y += 80;
+    }
 }
