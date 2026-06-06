@@ -17,10 +17,10 @@ private:
     DataStore data;
     int selectedMovieId;
     int selectedShowId;
-    const int seatStartX = 100;
-    const int seatStartY = 150;
-    const int seatSize = 40;
-    const int seatPad = 10;
+    const int seatStartX = 0;
+    const int seatStartY = 160;
+    const int seatSize = 55;
+    const int seatPad = 12;
     //Update helpers
     void UpdateMainMenu();
     void UpdateMovieScreen();
