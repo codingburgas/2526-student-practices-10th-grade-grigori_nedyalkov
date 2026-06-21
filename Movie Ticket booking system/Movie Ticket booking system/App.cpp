@@ -1,4 +1,9 @@
 #include "App.h"
+#include <algorithm>
+#include <unordered_set>
+#include <cctype>
+#include <sstream>
+#include <vector>
 
 App::App()
 {
@@ -7,6 +12,67 @@ App::App()
     selectedMovieId = -1;
     selectedShowId = -1;
 }
+
+// Search screen removed; search now integrated into Browse Movies only.
+
+void App::PerformFilter()
+{
+    // build languages/genres lists once if empty
+    if (languages.empty() || genres.empty() || dates.empty()) {
+        std::unordered_set<std::string> langSet, genreSet, dateSet;
+        for (auto &m : data.movies) {
+            langSet.insert(m.language);
+            genreSet.insert(m.genre);
+            dateSet.insert(m.releaseDate);
+        }
+        languages.clear(); genres.clear(); dates.clear();
+        languages.push_back("All");
+        for (auto &l : langSet) languages.push_back(l);
+        genres.push_back("All");
+        for (auto &g : genreSet) genres.push_back(g);
+        dates.push_back("All");
+        for (auto &d : dateSet) dates.push_back(d);
+        // ensure selected indices valid
+        if (selectedLanguageIdx >= (int)languages.size()) selectedLanguageIdx = 0;
+        if (selectedGenreIdx >= (int)genres.size()) selectedGenreIdx = 0;
+        if (selectedDateIdx >= (int)dates.size()) selectedDateIdx = 0;
+    }
+
+    filteredMovies.clear();
+    filteredMovies.reserve(data.movies.size());
+
+    std::string lowerSearch = searchText;
+    // to lower for case-insensitive match
+    std::transform(lowerSearch.begin(), lowerSearch.end(), lowerSearch.begin(), [](unsigned char c){ return (char)std::tolower(c); });
+
+    for (auto &m : data.movies) {
+        // text filter
+        std::string titleLower = m.title;
+        std::transform(titleLower.begin(), titleLower.end(), titleLower.begin(), [](unsigned char c){ return (char)std::tolower(c); });
+        if (!lowerSearch.empty() && titleLower.find(lowerSearch) == std::string::npos) continue;
+
+        // language filter
+        if (selectedLanguageIdx > 0) {
+            if (m.language != languages[selectedLanguageIdx]) continue;
+        }
+
+        // genre filter
+        if (selectedGenreIdx > 0) {
+            if (m.genre != genres[selectedGenreIdx]) continue;
+        }
+
+        // date filter
+        if (selectedDateIdx > 0) {
+            if (m.releaseDate != dates[selectedDateIdx]) continue;
+        }
+
+        filteredMovies.push_back(&m);
+    }
+
+    filtersDirty = false;
+}
+
+// UpdateSearch removed - search functionality now exists only in UpdateMovieScreen
 
 bool App::IsButtonClicked(Rectangle btn)
 {
@@ -61,7 +127,7 @@ void App::Draw()
 void App::UpdateMainMenu()
 {
     Rectangle browseBtn = { 760, 400, 400, 60 };
-    Rectangle exitBtn = { 760, 500, 400, 60 };
+    Rectangle exitBtn = { 760, 520, 400, 60 };
 
     if (IsButtonClicked(browseBtn)) currentState = MOVIE;
     if (IsButtonClicked(exitBtn))   currentState = EXIT;
@@ -72,65 +138,185 @@ void App::DrawMainMenu()
     DrawText("MOVIE TICKET BOOKING", 700, 250, 40, DARKGRAY);
 
     Rectangle browseBtn = { 760, 400, 400, 60 };
-    Rectangle exitBtn = { 760, 500, 400, 60 };
+    Rectangle exitBtn = { 760, 520, 400, 60 };
 
     DrawRectangleRec(browseBtn, DARKBLUE);
     DrawText("Browse Movies", 870, 418, 20, WHITE);
 
     DrawRectangleRec(exitBtn, MAROON);
-    DrawText("Exit", 930, 518, 20, WHITE);
+    DrawText("Exit", 930, 538, 20, WHITE);
 }
 
 void App::DrawMovieScreen()
 {
     int screenW = GetScreenWidth();
-    DrawText("Select a Movie", screenW / 2 - MeasureText("Select a Movie", 30) / 2, 60, 30, DARKGRAY);
 
+    // Page header
+    const int headerY = 28;
+    DrawText("Select a Movie", screenW / 2 - MeasureText("Select a Movie", 36) / 2, headerY, 36, DARKGRAY);
+
+    // Back button (subtle)
     Rectangle backBtn = { 20, 20, 120, 40 };
-    DrawRectangleRec(backBtn, GRAY);
-    DrawText("< Back", 35, 30, 20, WHITE);
+    DrawRectangleRec(backBtn, Fade(GRAY, 0.95f));
+    DrawRectangleLines((int)backBtn.x, (int)backBtn.y, (int)backBtn.width, (int)backBtn.height, DARKGRAY);
+    DrawText("< Back", 36, 30, 20, WHITE);
 
-    int btnW = 700;
-    int btnX = screenW / 2 - btnW / 2;
-    int y = 150;
+    // Search area (clean, elevated)
+    Rectangle inputBox = { 220, 70, screenW - 440, 50 };
+    DrawRectangleRec(inputBox, RAYWHITE);
+    DrawRectangleLines((int)inputBox.x, (int)inputBox.y, (int)inputBox.width, (int)inputBox.height, Fade(DARKGRAY, 0.6f));
 
-    for (auto& movie : data.movies)
+    // Magnifier icon
+    int magX = inputBox.x + 18;
+    int magY = inputBox.y + inputBox.height/2;
+    DrawCircle(magX, magY, 8, Fade(DARKBLUE, 0.9f));
+    DrawLine(magX + 6, magY + 6, magX + 14, magY + 14, Fade(DARKBLUE, 0.9f));
+
+    // Search text and cursor
+    std::string displayText = searchText.empty() ? "Type title to search..." : searchText;
+    Color textColor = searchText.empty() ? Fade(DARKGRAY, 0.7f) : DARKGRAY;
+    DrawText(displayText.c_str(), (int)inputBox.x + 40, (int)inputBox.y + 12, 22, textColor);
+    if (cursorVisible && !searchText.empty()) {
+        int textW = MeasureText(displayText.c_str(), 22);
+        DrawRectangle(inputBox.x + 40 + textW, inputBox.y + 12, 2, 26, DARKGRAY);
+    }
+
+    // Filter pills (flat design)
+    int pillY = (int)inputBox.y + (int)inputBox.height + 12;
+    Rectangle langBtn = { (float)inputBox.x, (float)pillY, 160, 36 };
+    Rectangle genreBtn = { (float)inputBox.x + 180, (float)pillY, 160, 36 };
+    Rectangle dateBtn = { (float)inputBox.x + 360, (float)pillY, 160, 36 };
+    DrawRectangleRec(langBtn, Fade(BLUE, 0.85f));
+    DrawRectangleRec(genreBtn, Fade(BLUE, 0.85f));
+    DrawRectangleRec(dateBtn, Fade(BLUE, 0.85f));
+    DrawText((std::string("Language: ") + (languages.empty() ? "All" : languages[selectedLanguageIdx])).c_str(), (int)langBtn.x + 12, (int)langBtn.y + 8, 16, WHITE);
+    DrawText((std::string("Genre: ") + (genres.empty() ? "All" : genres[selectedGenreIdx])).c_str(), (int)genreBtn.x + 12, (int)genreBtn.y + 8, 16, WHITE);
+    DrawText((std::string("Year: ") + (dates.empty() ? "All" : dates[selectedDateIdx])).c_str(), (int)dateBtn.x + 12, (int)dateBtn.y + 8, 16, WHITE);
+
+    // Ensure filtered list is up to date
+    if (filtersDirty) PerformFilter();
+
+    // Results panel (centered)
+    int resultsX = (int)inputBox.x;
+    int resultsY = pillY + 56;
+    int btnW = (int)inputBox.width;
+    int itemH = 82;
+    int visibleCount = (GetScreenHeight() - resultsY - 40) / itemH;
+
+    // Draw visible results with hover highlight and clean typography
+    Vector2 mouse = GetMousePosition();
+    int y = resultsY;
+    int idx = 0;
+    for (auto mptr : filteredMovies)
     {
-        Rectangle btn = { (float)btnX, (float)y, (float)btnW, 50 };
-        DrawRectangleRec(btn, DARKBLUE);
+        if (idx++ < resultsScroll) continue;
+        if (idx - resultsScroll > visibleCount) break;
 
-        DrawText(movie.title.c_str(), btnX + 20, y + 15, 20, WHITE);
+        Rectangle item = { (float)resultsX, (float)y, (float)btnW, (float)itemH };
+        bool hover = CheckCollisionPointRec(mouse, item);
+        Color base = hover ? Fade(DARKBLUE, 0.95f) : Fade(BLUE, 0.88f);
+        // draw subtle border behind the item so it doesn't overlay item content
+        Rectangle borderRect = { item.x - 2, item.y - 2, item.width + 4, item.height + 4 };
+        DrawRectangleRec(borderRect, Fade(DARKGRAY, 0.12f));
+        DrawRectangleRec(item, base);
 
-        int genreX = btnX + btnW / 2 - MeasureText(movie.genre.c_str(), 18) / 2;
-        DrawText(movie.genre.c_str(), genreX, y + 16, 18, LIGHTGRAY);
+        // Title: up to 3 wrapped lines
+        int titleW = btnW - 260;
+        std::vector<std::string> lines;
+        {
+            std::istringstream iss(mptr->title);
+            std::string word, cur;
+            while (iss >> word) {
+                if (cur.empty()) cur = word;
+                else {
+                    std::string cand = cur + " " + word;
+                    if (MeasureText(cand.c_str(), 20) <= titleW) cur = cand;
+                    else { lines.push_back(cur); cur = word; }
+                }
+            }
+            if (!cur.empty()) lines.push_back(cur);
+        }
+        for (int li = 0; li < (int)lines.size() && li < 3; ++li) {
+            DrawText(lines[li].c_str(), resultsX + 18, y + 10 + li * 20, 20, WHITE);
+        }
 
-        int dateX = btnX + btnW - MeasureText(movie.releaseDate.c_str(), 18) - 20;
-        DrawText(movie.releaseDate.c_str(), dateX, y + 16, 18, LIGHTGRAY);
+        // Genre and year
+        DrawText(mptr->genre.c_str(), resultsX + btnW/2 - MeasureText(mptr->genre.c_str(), 16)/2, y + 24, 16, Fade(RAYWHITE, 0.9f));
+        DrawText(mptr->releaseDate.c_str(), resultsX + btnW - MeasureText(mptr->releaseDate.c_str(), 16) - 20, y + 24, 16, Fade(RAYWHITE, 0.9f));
 
-        y += 70;
+        y += itemH;
     }
 }
 void App::UpdateMovieScreen()
 {
+    // Back button
     Rectangle backBtn = { 20, 20, 120, 40 };
     if (IsButtonClicked(backBtn)) { currentState = MAIN_MENU; return; }
 
-    int screenW = GetScreenWidth();
-    int btnW = 700;
-    int btnX = screenW / 2 - btnW / 2;
-    int y = 150;
-
-    for (auto& movie : data.movies)
+    // Handle text input for search
+    int ch = 0;
+    bool changed = false;
+    while ((ch = GetCharPressed()) > 0)
     {
-        Rectangle btn = { (float)btnX, (float)y, (float)btnW, 50 };
+        if (ch >= 32 && ch <= 125)
+        {
+            searchText.push_back((char)ch);
+            changed = true;
+        }
+    }
+    if (IsKeyPressed(KEY_BACKSPACE) && !searchText.empty()) { searchText.pop_back(); changed = true; }
+
+    // cursor timer
+    cursorTimer += GetFrameTime();
+    if (cursorTimer >= 0.5f) { cursorVisible = !cursorVisible; cursorTimer = 0.0f; }
+
+    // compute layout to match DrawMovieScreen
+    int screenW = GetScreenWidth();
+    Rectangle inputBox = { 220, 70, screenW - 440, 50 };
+    int pillY = (int)inputBox.y + (int)inputBox.height + 12;
+    // language/genre/date toggles (matching draw positions)
+    Rectangle langBtn = { (float)inputBox.x, (float)pillY, 160, 36 };
+    Rectangle genreBtn = { (float)inputBox.x + 180, (float)pillY, 160, 36 };
+    Rectangle dateBtn = { (float)inputBox.x + 360, (float)pillY, 160, 36 };
+    if (IsButtonClicked(langBtn)) { selectedLanguageIdx = (selectedLanguageIdx + 1) % (std::max(1, (int)languages.size())); changed = true; }
+    if (IsButtonClicked(genreBtn)) { selectedGenreIdx = (selectedGenreIdx + 1) % (std::max(1, (int)genres.size())); changed = true; }
+    if (IsButtonClicked(dateBtn)) { selectedDateIdx = (selectedDateIdx + 1) % (std::max(1, (int)dates.size())); changed = true; }
+
+    // mouse wheel scroll
+    float wheel = GetMouseWheelMove();
+    int resultsX = (int)inputBox.x;
+    int resultsY = pillY + 56;
+    int btnW = (int)inputBox.width;
+    int itemH = 82;
+    int visibleCount = (GetScreenHeight() - resultsY - 40) / itemH;
+
+    if (wheel != 0 && !filteredMovies.empty()) {
+        resultsScroll -= (int)wheel * 3;
+        if (resultsScroll < 0) resultsScroll = 0;
+        int maxScroll = std::max(0, (int)filteredMovies.size() - visibleCount);
+        if (resultsScroll > maxScroll) resultsScroll = maxScroll;
+    }
+
+    if (changed) filtersDirty = true;
+    if (filtersDirty) PerformFilter();
+
+    // Click handling on visible results (use same layout as Draw)
+    int y = resultsY;
+    int idx = 0;
+    for (auto mptr : filteredMovies)
+    {
+        if (idx++ < resultsScroll) { y += itemH; continue; }
+        if (idx - resultsScroll > visibleCount) break;
+        Rectangle btn = { (float)resultsX, (float)y, (float)btnW, (float)itemH };
         if (IsButtonClicked(btn))
         {
-            selectedMovieId = movie.id;
+            selectedMovieId = mptr->id;
             selectedShowId = -1;
             currentState = SHOWTIME_SELECTION;
             return;
         }
-        y += 70;
+        y += itemH;
+        if (y > GetScreenHeight()) break;
     }
 }
 

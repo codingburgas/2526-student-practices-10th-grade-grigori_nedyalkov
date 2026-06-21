@@ -1,7 +1,7 @@
 #pragma once
-#include <iostream>
+#include <string>
+#include <vector>
 #include <raylib.h>
-#include <ctime>
 #include "DataStore.h"
 #include "utils.h"
 
@@ -20,6 +20,19 @@ private:
     const int seatStartY = 160;
     const int seatSize = 55;
     const int seatPad = 12;
+    // Search screen state
+    std::string searchText;
+    float cursorTimer = 0.0f; // for blinking cursor
+    bool cursorVisible = true;
+    int selectedLanguageIdx = 0; // index into languages vector, -1 = no filter
+    int selectedGenreIdx = 0; // index into genres vector, -1 = no filter
+    std::vector<std::string> languages;
+    std::vector<std::string> genres;
+    std::vector<std::string> dates;
+    std::vector<const Movie*> filteredMovies;
+    bool filtersDirty = true;
+    int resultsScroll = 0;
+    int selectedDateIdx = 0; // index into dates vector
     //Update helpers
     void UpdateMainMenu();
     void UpdateMovieScreen();
@@ -31,6 +44,8 @@ private:
     void DrawMovieScreen();
     void DrawSeatSelection();
     void DrawBooking();
+
     bool IsButtonClicked(Rectangle btn);
     void DrawShowtimeSelection();
+    void PerformFilter();
 };
