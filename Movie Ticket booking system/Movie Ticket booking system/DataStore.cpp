@@ -18,7 +18,7 @@ void DataStore::SeedData()
     halls.push_back({ 3, 2, "Hall A" });
 
     auto MakeSeats = [](int rows, int cols) {
-        vector<Seat> seats;
+        std::vector<Seat> seats;
         int seatId = 1;
         for (int i = 0; i < rows; i++)
             for (int j = 0; j < cols; j++)
@@ -69,9 +69,9 @@ Cinema* DataStore::GetCinemaById(int id)
     return nullptr;
 }
 
-vector<Show*> DataStore::GetShowsByMovieId(int movieId)
+    std::vector<Show*> DataStore::GetShowsByMovieId(int movieId)
 {
-    vector<Show*> result;
+    std::vector<Show*> result;
     for (auto& s : shows)
         if (s.movieId == movieId) result.push_back(&s);
     return result;

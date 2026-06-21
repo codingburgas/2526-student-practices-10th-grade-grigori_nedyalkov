@@ -353,3 +353,27 @@ MigrationBackup/
 
 /.vs
 /.vscode
+
+# vcpkg and CMake local build artifacts
+vcpkg_installed/
+vcpkg/installed/
+vcpkg/buildtrees/
+vcpkg/packages/
+
+# CMake build files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+cmake-build-*/
+
+# Local build directories
+build/
+out/
+cmake-build-*/
+
+# Optional vcpkg produced folders
+lib/
+lib64/
+include/
+bin/

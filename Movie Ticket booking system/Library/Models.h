@@ -2,30 +2,29 @@
 #include <string>
 #include <vector>
 #include <ctime>
-using namespace std;
 
 enum SeatType { SILVERTIER, GOLDTIER, PLATINUMTIER };
 enum SeatStatus { AVAILABLE, LOCKED, BOOKED };
 
 struct Movie {
     int id;
-    string title;
-    string language;
-    string genre;
-    string releaseDate;
+    std::string title;
+    std::string language;
+    std::string genre;
+    std::string releaseDate;
 };
 
 struct Hall {
     int id;
     int cinemaId;
-    string name;
+    std::string name;
 };
 
 struct Cinema {
     int id;
-    string name;
-    string city;
-    vector<int> hallIds;
+    std::string name;
+    std::string city;
+    std::vector<int> hallIds;
 };
 
 struct Seat {
@@ -34,21 +33,21 @@ struct Seat {
     int number;
     SeatType type;
     SeatStatus status;
-    time_t lockTime;
+    std::time_t lockTime;
 };
 
 struct Show {
     int id;
     int movieId;
     int  hallId;
-    string startTime;
-    vector<Seat> seats;
+    std::string startTime;
+    std::vector<Seat> seats;
 };
 
 struct Booking {
     int id;
     int showId;
     int cinemaId;
-    vector<int> seatIds;
+    std::vector<int> seatIds;
     float totalPrice;
 };

@@ -4,7 +4,6 @@
 #include <ctime>
 #include "DataStore.h"
 #include "utils.h"
-using namespace std;
 
 class App {
 public:

@@ -4,10 +4,10 @@
 
 class DataStore {
 public:
-    vector<Movie>  movies;
-    vector<Show>   shows;
-    vector<Hall>   halls;
-    vector<Cinema> cinemas;
+    std::vector<Movie>  movies;
+    std::vector<Show>   shows;
+    std::vector<Hall>   halls;
+    std::vector<Cinema> cinemas;
 
     void SeedData();
 
@@ -15,5 +15,5 @@ public:
     Show* GetShowById(int id);
     Hall* GetHallById(int id);
     Cinema* GetCinemaById(int id);
-    vector<Show*> GetShowsByMovieId(int movieId);
+    std::vector<Show*> GetShowsByMovieId(int movieId);
 };

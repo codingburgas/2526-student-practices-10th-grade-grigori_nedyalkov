@@ -173,7 +173,7 @@ void App::UpdateSeatSelection()
     }
 
     // Expire locks after 10 seconds
-    time_t now = time(0);
+    std::time_t now = std::time(nullptr);
     for (auto& seat : show->seats)
         if (seat.status == LOCKED && difftime(now, seat.lockTime) > 10)
             seat.status = AVAILABLE;
@@ -223,7 +223,7 @@ void App::DrawSeatSelection()
     int gridY = 160;
 
     // Title
-    string header = "Select Seats  -  " + movie->title + "  " + show->startTime;
+    std::string header = "Select Seats  -  " + movie->title + "  " + show->startTime;
     DrawText(header.c_str(), screenW / 2 - MeasureText(header.c_str(), 24) / 2, 80, 24, DARKGRAY);
 
     Rectangle backBtn = { 20, 20, 120, 40 };
@@ -254,7 +254,7 @@ void App::DrawSeatSelection()
     for (auto& seat : show->seats)
         if (seat.status == LOCKED || seat.status == BOOKED)
             total += GetSeatPrice(seat.type);
-    string totalText = "Total: $" + to_string((int)total);
+    std::string totalText = "Total: $" + std::to_string((int)total);
     int totalY = gridY + gridH + 40;
     DrawText(totalText.c_str(), screenW / 2 - MeasureText(totalText.c_str(), 28) / 2, totalY, 28, DARKBLUE);
 
@@ -304,12 +304,12 @@ void App::DrawShowtimeSelection()
 
     int screenW = GetScreenWidth();
 
-    string header = "Showtimes  -  " + movie->title;
+    std::string header = "Showtimes  -  " + movie->title;
     DrawText(header.c_str(), screenW / 2 - MeasureText(header.c_str(), 30) / 2, 60, 30, DARKGRAY);
 
-    string genreStr = "Genre: " + movie->genre;
-    string langStr = "Language: " + movie->language;
-    string relStr = "Released: " + movie->releaseDate;
+    std::string genreStr = "Genre: " + movie->genre;
+    std::string langStr = "Language: " + movie->language;
+    std::string relStr = "Released: " + movie->releaseDate;
     DrawText(genreStr.c_str(), screenW / 2 - 280, 105, 20, GRAY);
     DrawText(langStr.c_str(), screenW / 2 - 50, 105, 20, GRAY);
     DrawText(relStr.c_str(), screenW / 2 + 160, 105, 20, GRAY);
@@ -318,7 +318,7 @@ void App::DrawShowtimeSelection()
     DrawRectangleRec(backBtn, GRAY);
     DrawText("< Back", 35, 30, 20, WHITE);
 
-    vector<Show*> movieShows = data.GetShowsByMovieId(selectedMovieId);
+    std::vector<Show*> movieShows = data.GetShowsByMovieId(selectedMovieId);
     if (movieShows.empty())
     {
         DrawText("No showtimes available.", screenW / 2 - 150, 400, 24, GRAY);
@@ -348,7 +348,7 @@ void App::DrawShowtimeSelection()
         int available = 0;
         for (auto& seat : show->seats)
             if (seat.status == AVAILABLE) available++;
-        string seatsText = "Seats: " + to_string(available);
+        std::string seatsText = "Seats: " + std::to_string(available);
         int seatsX = btnX + btnW - MeasureText(seatsText.c_str(), 20) - 20;
         DrawText(seatsText.c_str(), seatsX, y + 17, 20, LIGHTGRAY);
 
@@ -368,7 +368,7 @@ void App::UpdateShowtimeSelection()
     int btnX = screenW / 2 - btnW / 2;
     int y = 180;
 
-    vector<Show*> movieShows = data.GetShowsByMovieId(selectedMovieId);
+    std::vector<Show*> movieShows = data.GetShowsByMovieId(selectedMovieId);
     for (auto& show : movieShows)
     {
         Rectangle btn = { (float)btnX, (float)y, (float)btnW, 55 };
