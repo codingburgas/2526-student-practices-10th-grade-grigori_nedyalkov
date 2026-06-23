@@ -383,6 +383,10 @@ void App::UpdateSeatSelection()
         for (auto& seat : show->seats)
             if (seat.status == LOCKED)
                 seat.status = BOOKED;
+        Movie* movie = data.GetMovieById(selectedMovieId);
+        if (movie) {
+            data.AddNotification("Booking confirmed for \"" + movie->title + "\" at " + show->startTime, BOOKING_MADE);
+        }
         currentState = BOOKING;
     }
 }
@@ -465,6 +469,8 @@ void App::DrawSeatSelection()
     DrawRectangle(legendStartX, legend2Y, 28, 28, GRAY);   DrawText("Available", legendStartX + 36, legend2Y + 5, 18, DARKGRAY);
     DrawRectangle(legendStartX + 170, legend2Y, 28, 28, ORANGE); DrawText("Selected", legendStartX + 206, legend2Y + 5, 18, DARKGRAY);
     DrawRectangle(legendStartX + 340, legend2Y, 28, 28, RED);    DrawText("Booked", legendStartX + 376, legend2Y + 5, 18, DARKGRAY);
+
+    DrawNotifications();
 }
 
 void App::UpdateBooking()
@@ -481,6 +487,29 @@ void App::DrawBooking()
     Rectangle menuBtn = { 760, 600, 400, 60 };
     DrawRectangleRec(menuBtn, DARKBLUE);
     DrawText("Back to Main Menu", 820, 618, 20, WHITE);
+
+    DrawNotifications();
+}
+
+void App::DrawNotifications()
+{
+    double now = std::time(nullptr);
+    int screenW = GetScreenWidth();
+    int count = 0;
+    for (int i = (int)data.notifications.size() - 1; i >= 0 && count < 3; i--)
+    {
+        Notification& n = data.notifications[i];
+        double elapsed = difftime(now, n.timestamp);
+        if (elapsed > 4.0) continue;
+
+        float alpha = (float)(1.0 - elapsed / 4.0);
+        int y = 20 + count * 60;
+        int x = screenW - 410;
+
+        DrawRectangle(x, y, 390, 50, Fade(BLACK, alpha * 0.8f));
+        DrawText(n.message.c_str(), x + 10, y + 14, 16, Fade(WHITE, alpha));
+        count++;
+    }
 }
 
 void App::DrawShowtimeSelection()

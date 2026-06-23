@@ -1,4 +1,5 @@
 #include "DataStore.h"
+#include <iostream>
 
 void DataStore::SeedData()
 {
@@ -69,7 +70,23 @@ Cinema* DataStore::GetCinemaById(int id)
     return nullptr;
 }
 
-    std::vector<Show*> DataStore::GetShowsByMovieId(int movieId)
+void DataStore::AddNotification(const std::string& message, NotificationType type) {
+    Notification n;
+    n.id = nextNotificationId++;
+    n.message = message;
+    n.timestamp = std::time(nullptr);
+    n.type = type;
+    notifications.push_back(n);
+    std::cout << "Email sent to user@example.com: " << message << std::endl;
+}
+
+void DataStore::AddMovie(const std::string& title, const std::string& language, const std::string& genre, const std::string& releaseDate) {
+    int newId = (int)movies.size() + 1;
+    movies.push_back({ newId, title, language, genre, releaseDate });
+    AddNotification("New movie \"" + title + "\" has been released!", MOVIE_RELEASED);
+}
+
+std::vector<Show*> DataStore::GetShowsByMovieId(int movieId)
 {
     std::vector<Show*> result;
     for (auto& s : shows)

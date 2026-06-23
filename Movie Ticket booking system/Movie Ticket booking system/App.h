@@ -47,5 +47,6 @@ private:
 
     bool IsButtonClicked(Rectangle btn);
     void DrawShowtimeSelection();
+    void DrawNotifications();
     void PerformFilter();
 };

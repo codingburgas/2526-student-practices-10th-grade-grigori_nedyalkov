@@ -51,3 +51,12 @@ struct Booking {
     std::vector<int> seatIds;
     float totalPrice;
 };
+
+enum NotificationType { MOVIE_RELEASED, BOOKING_MADE, BOOKING_CANCELED };
+
+struct Notification {
+    int id;
+    std::string message;
+    std::time_t timestamp;
+    NotificationType type;
+};
