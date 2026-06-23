@@ -10,8 +10,12 @@ enum AppState
     MOVIE,
     SHOWTIME_SELECTION,
     SEAT_SELECTION,
+    PAYMENT_SELECTION,
     BOOKING
 };
+
+enum BookingMode { ONLINE, WALK_IN };
+enum PaymentMethod { CREDIT_CARD, CASH };
 
 inline float GetSeatPrice(int seatType)
 {

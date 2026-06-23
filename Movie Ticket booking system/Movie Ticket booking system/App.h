@@ -16,6 +16,8 @@ private:
     DataStore data;
     int selectedMovieId;
     int selectedShowId;
+    BookingMode bookingMode;
+    PaymentMethod selectedPayment;
     const int seatStartX = 0;
     const int seatStartY = 160;
     const int seatSize = 55;
@@ -37,11 +39,13 @@ private:
     void UpdateMainMenu();
     void UpdateMovieScreen();
     void UpdateSeatSelection();
+    void UpdatePaymentSelection();
     void UpdateBooking();
     void UpdateShowtimeSelection();
     //Draw helpers
     void DrawMainMenu();
     void DrawMovieScreen();
+    void DrawPaymentSelection();
     void DrawSeatSelection();
     void DrawBooking();
 

@@ -11,6 +11,8 @@ App::App()
     currentState = MAIN_MENU;
     selectedMovieId = -1;
     selectedShowId = -1;
+    bookingMode = ONLINE;
+    selectedPayment = CREDIT_CARD;
 }
 
 // Search screen removed; search now integrated into Browse Movies only.
@@ -106,6 +108,7 @@ void App::Update()
     case MOVIE:              UpdateMovieScreen();       break;
     case SHOWTIME_SELECTION: UpdateShowtimeSelection(); break;
     case SEAT_SELECTION:     UpdateSeatSelection();     break;
+    case PAYMENT_SELECTION:  UpdatePaymentSelection();  break;
     case BOOKING:            UpdateBooking();           break;
     default: break;
     }
@@ -119,6 +122,7 @@ void App::Draw()
     case MOVIE:              DrawMovieScreen();       break;
     case SHOWTIME_SELECTION: DrawShowtimeSelection(); break;
     case SEAT_SELECTION:     DrawSeatSelection();     break;
+    case PAYMENT_SELECTION:  DrawPaymentSelection();  break;
     case BOOKING:            DrawBooking();           break;
     default: break;
     }
@@ -387,7 +391,33 @@ void App::UpdateSeatSelection()
         if (movie) {
             data.AddNotification("Booking confirmed for \"" + movie->title + "\" at " + show->startTime, BOOKING_MADE);
         }
+        currentState = PAYMENT_SELECTION;
+    }
+}
+
+void App::UpdatePaymentSelection()
+{
+    Rectangle backBtn = { 20, 20, 120, 40 };
+    if (IsButtonClicked(backBtn)) { currentState = SEAT_SELECTION; return; }
+
+    int screenW = GetScreenWidth();
+    int btnW = 300, btnH = 60;
+    int centerX = screenW / 2 - btnW / 2;
+    int ccY = 400;
+    int cashY = 490;
+
+    Rectangle ccBtn = { (float)centerX, (float)ccY, (float)btnW, (float)btnH };
+    Rectangle cashBtn = { (float)centerX, (float)cashY, (float)btnW, (float)btnH };
+
+    if (IsButtonClicked(ccBtn)) {
+        selectedPayment = CREDIT_CARD;
         currentState = BOOKING;
+    }
+    if (bookingMode != ONLINE) {
+        if (IsButtonClicked(cashBtn)) {
+            selectedPayment = CASH;
+            currentState = BOOKING;
+        }
     }
 }
 
@@ -469,6 +499,42 @@ void App::DrawSeatSelection()
     DrawRectangle(legendStartX, legend2Y, 28, 28, GRAY);   DrawText("Available", legendStartX + 36, legend2Y + 5, 18, DARKGRAY);
     DrawRectangle(legendStartX + 170, legend2Y, 28, 28, ORANGE); DrawText("Selected", legendStartX + 206, legend2Y + 5, 18, DARKGRAY);
     DrawRectangle(legendStartX + 340, legend2Y, 28, 28, RED);    DrawText("Booked", legendStartX + 376, legend2Y + 5, 18, DARKGRAY);
+
+    DrawNotifications();
+}
+
+void App::DrawPaymentSelection()
+{
+    int screenW = GetScreenWidth();
+
+    DrawText("Select Payment Method", screenW / 2 - MeasureText("Select Payment Method", 30) / 2, 200, 30, DARKGRAY);
+
+    std::string modeText = "Booking Mode: ";
+    modeText += (bookingMode == ONLINE) ? "Online" : "Walk-in";
+    DrawText(modeText.c_str(), screenW / 2 - MeasureText(modeText.c_str(), 20) / 2, 260, 20, GRAY);
+
+    int btnW = 300, btnH = 60;
+    int centerX = screenW / 2 - btnW / 2;
+    int ccY = 400;
+    int cashY = 490;
+
+    Rectangle ccBtn = { (float)centerX, (float)ccY, (float)btnW, (float)btnH };
+    Rectangle cashBtn = { (float)centerX, (float)cashY, (float)btnW, (float)btnH };
+
+    DrawRectangleRec(ccBtn, DARKGREEN);
+    DrawText("Credit Card", ccBtn.x + btnW / 2 - MeasureText("Credit Card", 20) / 2, ccBtn.y + 18, 20, WHITE);
+
+    if (bookingMode == ONLINE) {
+        DrawRectangleRec(cashBtn, LIGHTGRAY);
+        DrawText("Cash", cashBtn.x + btnW / 2 - MeasureText("Cash", 20) / 2, cashBtn.y + 18, 20, GRAY);
+    } else {
+        DrawRectangleRec(cashBtn, DARKGREEN);
+        DrawText("Cash", cashBtn.x + btnW / 2 - MeasureText("Cash", 20) / 2, cashBtn.y + 18, 20, WHITE);
+    }
+
+    Rectangle backBtn = { 20, 20, 120, 40 };
+    DrawRectangleRec(backBtn, GRAY);
+    DrawText("< Back", 35, 30, 20, WHITE);
 
     DrawNotifications();
 }

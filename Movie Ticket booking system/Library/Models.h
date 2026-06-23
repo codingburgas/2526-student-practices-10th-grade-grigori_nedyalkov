@@ -50,6 +50,7 @@ struct Booking {
     int cinemaId;
     std::vector<int> seatIds;
     float totalPrice;
+    int paymentMethod;
 };
 
 enum NotificationType { MOVIE_RELEASED, BOOKING_MADE, BOOKING_CANCELED };
