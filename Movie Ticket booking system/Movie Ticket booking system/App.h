@@ -4,53 +4,38 @@
 #include <raylib.h>
 #include "DataStore.h"
 #include "utils.h"
+#include "Menu.h"
 
 class App {
 public:
     App();
     void Display();
-    void Draw();
-    void Update();
-private:
-    AppState currentState;
+
+    // Shared state accessible by all screens
     DataStore data;
+    AppState currentState;
+    int loggedInUserId;
     int selectedMovieId;
     int selectedShowId;
     BookingMode bookingMode;
     PaymentMethod selectedPayment;
-    const int seatStartX = 0;
-    const int seatStartY = 160;
-    const int seatSize = 55;
-    const int seatPad = 12;
-    // Search screen state
-    std::string searchText;
-    float cursorTimer = 0.0f; // for blinking cursor
-    bool cursorVisible = true;
-    int selectedLanguageIdx = 0; // index into languages vector, -1 = no filter
-    int selectedGenreIdx = 0; // index into genres vector, -1 = no filter
-    std::vector<std::string> languages;
-    std::vector<std::string> genres;
-    std::vector<std::string> dates;
-    std::vector<const Movie*> filteredMovies;
-    bool filtersDirty = true;
-    int resultsScroll = 0;
-    int selectedDateIdx = 0; // index into dates vector
-    //Update helpers
-    void UpdateMainMenu();
-    void UpdateMovieScreen();
-    void UpdateSeatSelection();
-    void UpdatePaymentSelection();
-    void UpdateBooking();
-    void UpdateShowtimeSelection();
-    //Draw helpers
-    void DrawMainMenu();
-    void DrawMovieScreen();
-    void DrawPaymentSelection();
-    void DrawSeatSelection();
-    void DrawBooking();
+    std::vector<int> selectedSeats;
 
-    bool IsButtonClicked(Rectangle btn);
-    void DrawShowtimeSelection();
-    void DrawNotifications();
-    void PerformFilter();
+private:
+    // Screen instances
+    MainMenuScreen mainMenuScreen;
+    LogInScreen logInScreen;
+    RegisterScreen registerScreen;
+    MovieScreen movieScreen;
+    ShowtimeScreen showtimeScreen;
+    SeatSelectionScreen seatSelectionScreen;
+    PaymentScreen paymentScreen;
+    BookingScreen bookingScreen;
+    MyBookingsScreen myBookingsScreen;
+    AdminPanelScreen adminPanelScreen;
+
+    // Internal helpers
+    Screen* GetCurrentScreen();
+    void Update();
+    void Draw();
 };

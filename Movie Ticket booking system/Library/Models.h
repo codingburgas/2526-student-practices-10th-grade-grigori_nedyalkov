@@ -42,6 +42,21 @@ struct Show {
     int  hallId;
     std::string startTime;
     std::vector<Seat> seats;
+
+    Seat* GetSeatById(int seatId) {
+        for (auto& s : seats) {
+            if (s.id == seatId) return &s;
+        }
+        return nullptr;
+    }
+};
+
+struct User {
+    int id;
+    std::string name;
+    std::string email;
+    std::string password;
+    bool isAdmin;
 };
 
 struct Booking {
@@ -51,6 +66,7 @@ struct Booking {
     std::vector<int> seatIds;
     float totalPrice;
     int paymentMethod;
+    int userId;
 };
 
 enum NotificationType { MOVIE_RELEASED, BOOKING_MADE, BOOKING_CANCELED };
